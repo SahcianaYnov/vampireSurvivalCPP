@@ -10,11 +10,7 @@ execute_process(
 
 find_package(boost REQUIRED)
 find_package(GTest REQUIRED) 
+find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics)
 
 enable_testing()
-
-add_executable(main_exe main.cpp)
-
-target_link_libraries(main_exe
- PRIVATE GTest::GTest GTest::Main # utilisé en interne
-)
+add_subdirectory(src)
