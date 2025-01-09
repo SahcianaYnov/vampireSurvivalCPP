@@ -1,0 +1,39 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "Build-Release",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build",
+      "installDir": "${sourceDir}/install",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/exe",
+        "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/bin/exe",
+        "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/bin/lib",
+        "CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/bin/exe",
+        "CMAKE_PDB_OUTPUT_DIRECTORY_RELEASE": "${sourceDir}/bin/exe",
+        "CMAKE_GENERATOR_PLATFORM": "x64"
+      },
+      "environment": {
+        "VSCMD_ARG_TGT_ARCH": "x64",
+        "VSCMD_ARG_HOST_ARCH": "x64",
+        "CONAN_PROFILE": "default"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Build-Release",
+      "configurePreset": "Build-Release",
+      "configuration": "Release",
+      "verbose": true,
+      "jobs": 4
+    }
+  ]
+}
