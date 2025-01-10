@@ -1,7 +1,11 @@
 [requires]
 boost/1.86.0
 gtest/1.15.0
-sfml/2.6.0
+sfml/2.6.2
+
+[options]
+sfml/*:Shared=True
+
 [generators]
 CMakeDeps
 #CMakeToolchain
