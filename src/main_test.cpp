@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "movementComponent.hpp"
+#include "systems/movementComponent.hpp"
+
 
 using namespace movcomp;
 
