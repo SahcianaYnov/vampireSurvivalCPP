@@ -15,4 +15,10 @@ namespace movcomp
 			base.get_min_bound().y <= other.get_max_bound().y &&
 			base.get_max_bound().y >= other.get_min_bound().y;
 	}
+
+	static bool isOutOfBounds(const Transform& base, const Transform& windowTransform) {
+		return base.position.x < 0 || base.position.x > windowTransform.size.x ||
+			base.position.y < 0 || base.position.y > windowTransform.size.y;
+	}
+
 }

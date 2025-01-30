@@ -1,141 +1,154 @@
 #include <SFML/Graphics.hpp>
-
+#include <iostream>
+#include <vector>
 #include "playerEntity.hpp"
 #include "enemyEntity.hpp"
-
-#include <iostream>
+#include "animationComponent.hpp"
+#include <systems/spawnComponent.hpp>
 
 using namespace playerent;
 using namespace enemyent;
 using namespace movcomp;
 
+
+bool circleIntersectsRectangle(const Transform& circleTransform, float circleRadius, const Transform& rectangleTransform) {
+    float closestX = std::fmax(rectangleTransform.position.x, std::fmin(circleTransform.position.x, rectangleTransform.position.x + rectangleTransform.size.x));
+    float closestY = std::fmax(rectangleTransform.position.y, std::fmin(circleTransform.position.y, rectangleTransform.position.y + rectangleTransform.size.y));
+
+    float distanceX = circleTransform.position.x - closestX;
+    float distanceY = circleTransform.position.y - closestY;
+    float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
+
+    return distance <= circleRadius;
+}
+
 int main() {
-	// EN GI NE
+    srand(static_cast<unsigned int>(time(0)));
 
-	// W I N D O W  &  S E T T I N G S
-	Transform windowEngine;
-	windowEngine.position = { 0,0 };
-	windowEngine.size = { 800, 600 };
+    // W I N D O W  &  S E T T I N G S
+    Transform windowEngine;
+    windowEngine.position = { 0, 0 };
+    windowEngine.size = { 800, 600 };
 
-	sf::ContextSettings settings;
-	settings.antialiasingLevel = 8;
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 8;
 
-	sf::RenderWindow windowRender(
-		sf::VideoMode(windowEngine.size.x, windowEngine.size.y),
-		"Vampire Survival",
-		sf::Style::Default,
-		settings);
-	windowRender.setVerticalSyncEnabled(true);
+    sf::RenderWindow windowRender(
+        sf::VideoMode(windowEngine.size.x, windowEngine.size.y),
+        "Vampire Survival",
+        sf::Style::Default,
+        settings);
+    windowRender.setVerticalSyncEnabled(true);
 
+    // P L A Y E R
+    animcomp::Animation animation;
+    sf::Sprite playerSprite = animation.sprite;
+    sf::Texture playerTexture;
+    Player playerEngine;
 
-	// P L A Y E R
-	sf::Sprite playerSprite;
-	sf::Texture playerTexture;
-	Player playerEngine;
+    playerTexture.loadFromFile("assets/player.png");
+    playerSprite.setTexture(playerTexture);
 
-	playerTexture.loadFromFile("assets/player.png");
-	playerSprite.setTexture(playerTexture);
+    playerEngine.PlayerTransform.position = { windowEngine.size.x / 2, windowEngine.size.y / 2 };
+    playerSprite.setPosition(playerEngine.PlayerTransform.position.x, playerEngine.PlayerTransform.position.y);
 
-	playerEngine.PlayerTransform.position = {windowEngine.size.x / 2, windowEngine.size.y / 2};
+    // B U L L E T S
+    sf::CircleShape bulletRender(50.f);
+    std::vector<Enemy> bulletsEngine;
 
-	playerSprite.setPosition(playerEngine.PlayerTransform.position.x, playerEngine.PlayerTransform.position.y);
+    // T I M E R
+    sf::Clock spawnClock;
+    float spawnInterval = 1.0f;
+    float elapsedTime = 0.f;
 
-	// B U L L E T
-	sf::CircleShape bulletRender(50.f);
-	Enemy bulletEngine;
+    // E VE NT
+    while (windowRender.isOpen()) {
+        sf::Event event;
+        while (windowRender.pollEvent(event)) {
+            if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
+                windowRender.close();
+        }
 
-	bulletEngine.EnemyTransform.position = {windowEngine.size.x,0};
+        // Handle player movement
+        Motion direction;
+        float speed = 500.f;
 
-	sf::Vector2f sfVec = *reinterpret_cast<sf::Vector2f*>(&bulletEngine.EnemyTransform.position);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+            direction = { {0.f, -1.f}, speed };
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            direction = { {0.f, 1.f}, speed };
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+            direction = { {-1.f, 0.f}, speed };
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+            direction = { {1.f, 0.f}, speed };
+        }
+        else {
+            direction = { {0.f, 0.f}, 0.f };
+        }
 
-	bulletRender.setPosition(sfVec);
+        update_position(playerEngine.PlayerTransform, direction, 0.016f);
 
-	// E VE NT
-	while (windowRender.isOpen()) {
-		sf::Event event;
-		while (windowRender.pollEvent(event)) {
-			if (event.type == sf::Event::Closed || (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
-				windowRender.close();
-		}
+        // S P A W N
+        elapsedTime += spawnClock.restart().asSeconds();
+        if (elapsedTime >= spawnInterval) {
+            Enemy newBullet;
 
-		Motion direction;
-		float speed = 500.f;
+            Vec2 directionNormalized;
+            newBullet.EnemyTransform.position = spacomp::randomizePosition(windowEngine, directionNormalized);
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-		{
-			direction = {
-				.directionNormalized = {0.f,-1.f},
-				.speed = speed
-			};
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		{
-			direction = {
-				.directionNormalized = {0.f,1.f},
-				.speed = speed
-			};
+            if (newBullet.EnemyTransform.position.x >= 0 && newBullet.EnemyTransform.position.x <= windowEngine.size.x &&
+                newBullet.EnemyTransform.position.y >= 0 && newBullet.EnemyTransform.position.y <= windowEngine.size.y) {
 
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-		{
-			direction = {
-				.directionNormalized = {-1.f,0.f},
-				.speed = speed
-			};
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-		{
-			direction = {
-				.directionNormalized = {1.f,0.f},
-				.speed = speed
-			};
-		}else
-		{
-			direction = {
-				.directionNormalized = {0.f, 0.f},
-				.speed = 0.f
-			};
-		}
-		update_position(playerEngine.PlayerTransform, direction, 0.016f);
+                newBullet.EnemyMotion.directionNormalized = directionNormalized;
+                newBullet.EnemyMotion.speed = 50.0f;
 
-		//REN DER
-		windowRender.clear(sf::Color::Black);
+                bulletsEngine.push_back(newBullet);
+            }
 
-		// P L A Y E R
-		playerSprite.setTextureRect(sf::IntRect(0, 0, 64,64));
+            elapsedTime = 0.f;
+        }
 
-		//std::cout << playerEngine.PlayerTransform.position.x << playerEngine.PlayerTransform.position.y << std::endl;
+        // DES TRUC TION
+        for (auto bullet = bulletsEngine.begin(); bullet != bulletsEngine.end();) {
+            update_position(bullet->EnemyTransform, bullet->EnemyMotion, 0.016f);
 
-		playerSprite.setPosition(playerEngine.PlayerTransform.position.x, playerEngine.PlayerTransform.position.y);
+            if (bullet->EnemyTransform.position.x < 0 || bullet->EnemyTransform.position.x > windowEngine.size.x ||
+                bullet->EnemyTransform.position.y < 0 || bullet->EnemyTransform.position.y > windowEngine.size.y) {
 
-		windowRender.draw(playerSprite);
+                bullet = bulletsEngine.erase(bullet);
+            }
 
-		// B U L L E T
-		bulletRender.setFillColor(sf::Color(100, 250, 50));
+            float bulletRadius = bulletRender.getRadius();
+            if (circleIntersectsRectangle(bullet->EnemyTransform, bulletRadius, playerEngine.PlayerTransform)) {
+                bullet = bulletsEngine.erase(bullet);
+            }
+            else {
+                ++bullet;
+            }
+        }
 
-		bulletEngine.EnemyMotion.directionNormalized = {-1.f,0.f};
+        // REN DER
+        windowRender.clear(sf::Color::Black);
 
-		bulletEngine.EnemyMotion.speed = 5.0f;
+        // P L A Y E R
+        playerSprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
+        playerSprite.setPosition(playerEngine.PlayerTransform.position.x, playerEngine.PlayerTransform.position.y);
+        windowRender.draw(playerSprite);
 
-		bulletRender.move(bulletEngine.EnemyMotion.directionNormalized.x * bulletEngine.EnemyMotion.speed, 
-			bulletEngine.EnemyMotion.directionNormalized.y);
+        // B U L L E T S
+        bulletRender.setFillColor(sf::Color(100, 250, 50));
 
-		windowRender.draw(bulletRender);
+        // B U L L E T
+        for (auto& bullet : bulletsEngine) {
+            bulletRender.setPosition(bullet.EnemyTransform.position.x, bullet.EnemyTransform.position.y);
+            windowRender.draw(bulletRender);
+        }
 
+        windowRender.display();
+    }
 
-		/* Camera follow player
-		sf::View view(sf::Vector2f(350.f, 300.f), sf::Vector2f(300.f,
-			200.f));
-		window.setView(view);
-		view.setCenter(playerPosition);
-		*/
-
-		// Vec2 ou 2float, if contains bullet = not outside
-		// for each bullet -> if !contains -> bullet.destroy();
-		//window.getViewport().contains(bulletPosition);
-
-		windowRender.display();
-	}
-
-	return 0;
+    return 0;
 }

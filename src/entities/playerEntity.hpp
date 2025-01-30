@@ -4,7 +4,8 @@
 using namespace movcomp;
 
 namespace playerent {
-	struct Player {
+	struct Player
+	{
 		Transform PlayerTransform;
 		Motion PlayerMotion;
 	};

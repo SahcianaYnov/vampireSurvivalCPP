@@ -40,4 +40,6 @@ namespace movcomp {
 	[[nodiscard]] inline bool intersects(const Transform& base, const Transform& other);
 
 	void update_position(Transform& transform, const Motion& motion, float deltaTime);
+
+	static bool isOutOfBounds(const Transform& base, const Transform& windowTransform);
 }

@@ -5,55 +5,38 @@ using namespace movcomp;
 
 namespace spacomp {
 
-	movcomp::Vec2 randomizePosition(const movcomp::Transform& windowSize)
-	{
-		movcomp::Vec2 newPosition;
+    Vec2 randomizePosition(const Transform& windowSize, Vec2& directionNormalized)
+    {
+        Vec2 newPosition;
+        Vec2 maxBound = windowSize.get_max_bound();
 
-		movcomp::Vec2 maxBound = windowSize.get_max_bound();
-		movcomp::Vec2 minBound = windowSize.get_min_bound();
+        // Zone aléatoire (0 = haut, 1 = bas, 2 = gauche, 3 = droite)
+        int zone = rand() % 4;
 
+        switch (zone)
+        {
+        case 0: // Haut
+            newPosition = { static_cast<float>(rand() % static_cast<int>(maxBound.x)), 0.f };  // Spawn aléatoire sur le bord haut
+            directionNormalized = { 0.f, 1.f }; // Direction vers le bas
+            break;
 
-		// HAUT GAUCHE
+        case 1: // Bas
+            newPosition = { static_cast<float>(rand() % static_cast<int>(maxBound.x)), maxBound.y };  // Spawn aléatoire sur le bord bas
+            directionNormalized = { 0.f, -1.f }; // Direction vers le haut
+            break;
 
-		// HAUT DROIT
+        case 2: // Gauche
+            newPosition = { 0.f, static_cast<float>(rand() % static_cast<int>(maxBound.y)) };  // Spawn aléatoire sur le bord gauche
+            directionNormalized = { 1.f, 0.f }; // Direction vers la droite
+            break;
 
-		// BAS GAUCHE
+        case 3: // Droite
+            newPosition = { maxBound.x, static_cast<float>(rand() % static_cast<int>(maxBound.y)) };  // Spawn aléatoire sur le bord droit
+            directionNormalized = { -1.f, 0.f }; // Direction vers la gauche
+            break;
+        }
 
-		// BAS DROIT
-
-
-		int zone = rand() % 4; // 0 1 2 3
-
-		switch (zone)
-		{
-		case 0:
-			newPosition = {};
-
-			break;
-		case 1:
-			newPosition = {};
-
-			break;
-		case 2:
-			newPosition = {};
-
-			break;
-		case 3:
-			newPosition = {};
-
-			break;
-		}
-
-
-
-		
-
-
-		// Quelque chose qui ne dépasse pas les valeurs des bounds
-
-
-
-		return newPosition;
-	}
+        return newPosition;
+    }
 
 }

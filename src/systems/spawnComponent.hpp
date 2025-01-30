@@ -5,6 +5,6 @@ using namespace movcomp;
 
 namespace spacomp {
 
-	movcomp::Vec2 randomizePosition(const movcomp::Transform& windowSize);
+	Vec2 randomizePosition(const Transform& windowSize, Vec2& directionNormalized);
 
 }
