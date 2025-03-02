@@ -2,7 +2,6 @@
 #include <ecs/component_manager.hpp>
 #include <ecs/entity_manager.hpp>
 
-#include "../../../../../.conan2/p/sfmld83ff95bb9185/p/include/SFML/Graphics/CircleShape.hpp"
 
 
 bool circleIntersectsRectangle(const movcomp::Transform& circleTransform, float circleRadius, const movcomp::Transform& rectangleTransform) {

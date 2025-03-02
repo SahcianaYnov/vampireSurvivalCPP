@@ -1,30 +1,32 @@
 #include <SFML/Graphics.hpp>
-#include "playerEntity.hpp"
-#include "enemyEntity.hpp"
-#include "animationComponent.hpp"
 #include <systems/spawnComponent.hpp>
 
 #include "ecs/type.hpp"
-#include <ecs/component_manager.hpp>
-
+#include "ecs/component_manager.hpp"
 #include "ecs/entity_manager.hpp"
 #include "ecs/system_manager.hpp"
-#include <systems/bullet_system.hpp>
+#include "systems/bullet_system.hpp"
 
-using namespace playerent;
-using namespace enemyent;
+#include "entities/playerEntity.hpp"
+#include "entities/enemyEntity.hpp"
+#include "components/animationComponent.hpp"
+
 using namespace movcomp;
 
 int main() {
     srand(static_cast<unsigned int>(time(0)));
 
-    auto& componentManager = ecs::ComponentManager::singleton();
-    auto& systemManager = ecs::SystemManager::singleton();
+    // Utilisez components() pour obtenir l'instance singleton de ComponentManager
+    auto& componentManager = ecs::components();
+    // Utilisez systems() pour obtenir l'instance singleton de SystemManager
+    auto& systemManager = ecs::systems();
+    // Utilisez entities() pour obtenir l'instance singleton de EntityManager
+    auto& entityManager = ecs::entities();
 
     componentManager.register_component<Motion>();
     componentManager.register_component<Transform>();
-    componentManager.register_component<Player>();
-    componentManager.register_component<Enemy>();
+    componentManager.register_component<playerent::Player>();
+    componentManager.register_component<enemyent::Enemy>();
 
     auto bulletSystem = std::make_shared<BulletSystem>();
     ecs::Signature bulletSig;
@@ -32,7 +34,6 @@ int main() {
     bulletSig.set(componentManager.get_component_type<Motion>(), true);
     bulletSig.set(componentManager.get_component_type<sf::CircleShape>(), true);
     systemManager.register_system("BulletSystem", bulletSystem, bulletSig);
-
 
     // W I N D O W  &  S E T T I N G S
 
@@ -43,7 +44,7 @@ int main() {
         .size = {800, 600},
     };
 
-    ecs::Entity windowEntity = ecs::EntityManager::singleton().create_entity();
+    ecs::Entity windowEntity = entityManager.create_entity();
 
     sf::RenderWindow windowRender(
         sf::VideoMode(windowTransformData.size.x, windowTransformData.size.y),
@@ -52,12 +53,12 @@ int main() {
         settings);
     windowRender.setVerticalSyncEnabled(true);
 
-    ecs::ComponentManager::singleton().add_component<Transform>(windowEntity, std::move(windowTransformData));
+    componentManager.add_component<Transform>(windowEntity, std::move(windowTransformData));
 
     ecs::Signature signatureWindowTransform;
-    signatureWindowTransform.set(ecs::ComponentManager::singleton().get_component_type<Transform>(), true);
-    ecs::EntityManager::singleton().set_entity_signature(windowEntity, signatureWindowTransform);
-    ecs::SystemManager::singleton().update_entity_signature(windowEntity, signatureWindowTransform);
+    signatureWindowTransform.set(componentManager.get_component_type<Transform>(), true);
+    entityManager.set_entity_signature(windowEntity, signatureWindowTransform);
+    systemManager.update_entity_signature(windowEntity, signatureWindowTransform);
 
     // P L A Y E R
     Transform playerTransformData{
@@ -76,20 +77,20 @@ int main() {
 
     playerSprite.setPosition(playerTransformData.position.x, playerTransformData.position.y);
 
-    ecs::Entity playerEntity = ecs::EntityManager::singleton().create_entity();
+    ecs::Entity playerEntity = entityManager.create_entity();
 
-    ecs::ComponentManager::singleton().add_component<Transform>(playerEntity, std::move(playerTransformData));
-    ecs::ComponentManager::singleton().add_component<Motion>(playerEntity, std::move(playerMotionData));
+    componentManager.add_component<Transform>(playerEntity, std::move(playerTransformData));
+    componentManager.add_component<Motion>(playerEntity, std::move(playerMotionData));
 
     ecs::Signature signaturePlayerTransform;
-    signaturePlayerTransform.set(ecs::ComponentManager::singleton().get_component_type<Transform>(), true);
-    ecs::EntityManager::singleton().set_entity_signature(playerEntity, signaturePlayerTransform);
-    ecs::SystemManager::singleton().update_entity_signature(playerEntity, signaturePlayerTransform);
+    signaturePlayerTransform.set(componentManager.get_component_type<Transform>(), true);
+    entityManager.set_entity_signature(playerEntity, signaturePlayerTransform);
+    systemManager.update_entity_signature(playerEntity, signaturePlayerTransform);
 
     ecs::Signature signaturePlayerMotion;
-    signaturePlayerMotion.set(ecs::ComponentManager::singleton().get_component_type<Motion>(), true);
-    ecs::EntityManager::singleton().set_entity_signature(playerEntity, signaturePlayerMotion);
-    ecs::SystemManager::singleton().update_entity_signature(playerEntity, signaturePlayerMotion);
+    signaturePlayerMotion.set(componentManager.get_component_type<Motion>(), true);
+    entityManager.set_entity_signature(playerEntity, signaturePlayerMotion);
+    systemManager.update_entity_signature(playerEntity, signaturePlayerMotion);
 
     // B U L L E T S
     Transform bulletsTransformData;
@@ -105,26 +106,26 @@ int main() {
     // S P A W N
     elapsedTime += spawnClock.restart().asSeconds();
     if (elapsedTime >= spawnInterval) {
-        ecs::Entity bulletEntity = ecs::EntityManager::singleton().create_entity();
+        ecs::Entity bulletEntity = entityManager.create_entity();
 
-        ecs::ComponentManager::singleton().add_component<Transform>(bulletEntity, std::move(bulletsTransformData));
-        ecs::ComponentManager::singleton().add_component<Motion>(bulletEntity, std::move(bulletsMotionData));
-        ecs::ComponentManager::singleton().add_component<sf::CircleShape>(bulletEntity, std::move(circleRender));
+        componentManager.add_component<Transform>(bulletEntity, std::move(bulletsTransformData));
+        componentManager.add_component<Motion>(bulletEntity, std::move(bulletsMotionData));
+        componentManager.add_component<sf::CircleShape>(bulletEntity, std::move(circleRender));
 
         ecs::Signature signatureBulletTransform;
-        signatureBulletTransform.set(ecs::ComponentManager::singleton().get_component_type<Transform>(), true);
-        ecs::EntityManager::singleton().set_entity_signature(bulletEntity, signatureBulletTransform);
-        ecs::SystemManager::singleton().update_entity_signature(bulletEntity, signatureBulletTransform);
+        signatureBulletTransform.set(componentManager.get_component_type<Transform>(), true);
+        entityManager.set_entity_signature(bulletEntity, signatureBulletTransform);
+        systemManager.update_entity_signature(bulletEntity, signatureBulletTransform);
 
         ecs::Signature signatureBulletMotion;
-        signatureBulletMotion.set(ecs::ComponentManager::singleton().get_component_type<Motion>(), true);
-        ecs::EntityManager::singleton().set_entity_signature(bulletEntity, signatureBulletMotion);
-        ecs::SystemManager::singleton().update_entity_signature(bulletEntity, signatureBulletMotion);
+        signatureBulletMotion.set(componentManager.get_component_type<Motion>(), true);
+        entityManager.set_entity_signature(bulletEntity, signatureBulletMotion);
+        systemManager.update_entity_signature(bulletEntity, signatureBulletMotion);
 
         ecs::Signature signatureCircleRender;
-        signatureCircleRender.set(ecs::ComponentManager::singleton().get_component_type<sf::CircleShape>(), true);
-        ecs::EntityManager::singleton().set_entity_signature(bulletEntity, signatureCircleRender);
-        ecs::SystemManager::singleton().update_entity_signature(bulletEntity, signatureCircleRender);
+        signatureCircleRender.set(componentManager.get_component_type<sf::CircleShape>(), true);
+        entityManager.set_entity_signature(bulletEntity, signatureCircleRender);
+        systemManager.update_entity_signature(bulletEntity, signatureCircleRender);
 
         bulletsTransformData.position = spacomp::randomizePosition(windowTransformData, directionNormalized);
 
@@ -138,7 +139,7 @@ int main() {
         elapsedTime = 0.f;
     }
 
-    // E VE NT
+    // E V E N T
     while (windowRender.isOpen()) {
         sf::Event event;
         while (windowRender.pollEvent(event)) {
@@ -164,11 +165,11 @@ int main() {
 
         update_position(playerTransformData, playerMotionData, 0.016f);
 
-    	//bulletSystem->updateBulletPositions(0.016f);
+        //bulletSystem->updateBulletPositions(0.016f);
 
         //bulletSystem->deleteBullet(windowTransformData, playerTransformData);
 
-        // REN DER
+        // R E N D E R
         windowRender.clear(sf::Color::Black);
 
         // P L A Y E R

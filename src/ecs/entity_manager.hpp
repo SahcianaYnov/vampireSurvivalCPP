@@ -1,10 +1,11 @@
 #pragma once
 
-#include "ecs/type.hpp"
 
 #include <array>
 #include <queue>
 #include <cstddef>
+
+#include "type.hpp"
 
 namespace ecs { class EntityManager; }
 

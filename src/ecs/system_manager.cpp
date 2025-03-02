@@ -1,4 +1,6 @@
-#include "ecs/system_manager.hpp"
+#include "system_manager.hpp"
+
+#include "type.hpp"
 
 namespace ecs
 {

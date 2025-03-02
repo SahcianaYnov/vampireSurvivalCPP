@@ -1,6 +1,8 @@
-#include "ecs/entity_manager.hpp"
+#include "entity_manager.hpp"
 
 #include <cassert>
+
+#include "type.hpp"
 
 namespace ecs
 {

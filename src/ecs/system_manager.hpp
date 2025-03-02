@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ecs/type.hpp"
-
 #include <unordered_map>
 #include <set>
 #include <iostream>
+
+#include "type.hpp"
 
 namespace ecs { class SystemManager; }
 
