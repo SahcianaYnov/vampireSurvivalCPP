@@ -1,7 +1,6 @@
 #include "ecs/entity_manager.hpp"
 
 #include <cassert>
-#include <numeric>
 
 namespace ecs
 {
@@ -13,7 +12,7 @@ namespace ecs
 		}
 	}
 
-	[[nodiscard]]Entity EntityManager::create_entity()
+	Entity EntityManager::create_entity()
 	{
 		assert(mLivingEntityCount < MAX_ENTITIES && "Too many entities in existence.");
 
@@ -43,5 +42,11 @@ namespace ecs
 	{
 		assert(entity < MAX_ENTITIES && "Entity out of range.");
 		return mSignatures[entity];
+	}
+
+	[[nodiscard]] EntityManager& entities()
+	{
+		static EntityManager s_singleton;
+		return s_singleton;
 	}
 }

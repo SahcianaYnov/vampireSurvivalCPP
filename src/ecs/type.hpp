@@ -8,7 +8,7 @@ namespace ecs
 	constexpr Entity MAX_ENTITIES = 100'000u;
 
 	using Component = uint8_t;
-	constexpr Component MAX_COMPONENTS = 32;
+	constexpr Component MAX_COMPONENTS = 32u;
 
 	using Signature = std::bitset<MAX_COMPONENTS>;
 }

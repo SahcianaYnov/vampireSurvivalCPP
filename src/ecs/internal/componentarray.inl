@@ -1,7 +1,8 @@
-#include <cassert>
+#pragma once
 
 #include "ecs/type.hpp"
 
+#include <cassert>
 #include <vector>
 #include <unordered_map>
 

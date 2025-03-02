@@ -12,7 +12,7 @@ namespace ecs
 	{
 		for (const auto& [_, system] : mSystems)
 		{
-			system->mEntities.erase(entity);
+			system->entities().erase(entity);
 		}
 	}
 
@@ -24,12 +24,18 @@ namespace ecs
 
 			if (const bool systemUsesEntity = ((entitySignature & systemSignature) == systemSignature))
 			{
-				system->mEntities.insert(entity);
+				system->entities().insert(entity);
 			}
 			else
 			{
-				system->mEntities.erase(entity);
+				system->entities().erase(entity);
 			}
 		}
+	}
+
+	[[nodiscard]] SystemManager& systems()
+	{
+		static SystemManager s_singleton;
+		return s_singleton;
 	}
 }
