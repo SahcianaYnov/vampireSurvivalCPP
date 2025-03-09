@@ -12,8 +12,8 @@
 class EnemySystem : public ecs::System
 {
 public:
-    void create_enemy(sf::Texture& spriteSheet, const Transform& screenTransform);
-    void handle_movements(float deltaTime);
+    void create_enemy(sf::Texture& spriteSheet, const Transform& screenTransform, Transform& enemyTransform);
+    void handle_movements(float deltaTime, Vector2& goal);
     bool isOutOfBounds(const Transform& base, const Transform& windowTransform);
     bool intersects(const Transform& base, const Transform& other);
     void checkCollisions(const Transform& screenTransform, const Transform& collider);

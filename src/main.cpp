@@ -114,12 +114,6 @@ int main() {
     Motion enemyMotionData{};
     enemyTexture.loadFromFile("assets/player.png");
 
-    sf::Sprite enemySprite;
-    enemySprite.setTexture(enemyTexture);
-    enemySprite.setPosition(enemyTransformData.position.x, enemyTransformData.position.y);
-
-
-
     // EVENT LOOP
     while (windowRender.isOpen()) {
         float speed = 500.f;
@@ -165,32 +159,23 @@ int main() {
         if (elapsedTime >= spawnInterval) {
             bulletsTransformData.position = spacomp::randomizePosition(windowTransformData, directionNormalized);
 
-            //std::cout << bulletsTransformData.position.x << std::endl;
-
             bulletsMotionData.direction = directionNormalized;
             bulletsMotionData.acceleration = { 100.f, 100.f };
 
             bulletSystem->create_bullet(bulletsTransformData, bulletsMotionData);
 
-            enemySystem->create_enemy(enemyTexture, windowTransformData);
-
             enemyTransformData = enemySystem->randomizePosition(windowTransformData, convertedPlayerPosition);
 
-            std::cout << "Position sur x " << enemyTransformData.position.x << " Position sur y " << enemyTransformData.position.y << std::endl;
-
-            enemyMotionData.direction = convertedPlayerPosition;
-            enemyMotionData.acceleration = { 100.f, 100.f };
-
+            enemySystem->create_enemy(enemyTexture, windowTransformData, enemyTransformData);
 
             elapsedTime = 0.f;
         }
 
         bulletSystem->update(0.016f);
-
-        enemySystem->handle_movements(0.016f);
-        
+        enemySystem->handle_movements(0.016f, convertedPlayerPosition);
 
         bulletSystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
+        enemySystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
 
         // RENDER
         windowRender.clear(sf::Color::Black);

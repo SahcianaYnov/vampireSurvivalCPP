@@ -7,32 +7,27 @@
 #include "ecs/entity_manager.hpp"
 #include "ecs/component_manager.hpp"
 
-void EnemySystem::create_enemy(sf::Texture& spriteSheet, const Transform& screenTransform)
+void EnemySystem::create_enemy(sf::Texture& spriteSheet, const Transform& screenTransform, Transform& enemyTransform)
 {
-
     auto& componentManager = ecs::ComponentManager::singleton();
     auto& entityManager = ecs::EntityManager::singleton();
     auto& systemManager = ecs::SystemManager::singleton();
 
     ecs::Entity enemyEntity = entityManager.create_entity();
 
-    Transform enemyTransform{
-        .position = {screenTransform.size.x / 2.f, screenTransform.size.y / 2.f},
-        .size = {16.f, 16.f},
-        .scale = {2.f, 2.f}
-    };
-    componentManager.add_component<Transform>(enemyEntity, std::move(enemyTransform));
-
-    Motion enemyMotion{
-       .direction = {0.f, 0.f},
-       .acceleration = {10.f, 10.f}
-    };
+    Motion enemyMotion{.acceleration = {1.f, 1.f}};
     componentManager.add_component<Motion>(enemyEntity, std::move(enemyMotion));
 
     SpriteRender enemySpriteComp{};
     enemySpriteComp.texture = &spriteSheet;
     enemySpriteComp.sprite.setTexture(spriteSheet);
-    enemySpriteComp.sprite.setScale(2.f, 2.f);
+    enemySpriteComp.sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
+    enemySpriteComp.sprite.setPosition(enemyTransform.position.x, enemyTransform.position.y);
+
+
+    componentManager.add_component<Transform>(enemyEntity, std::move(enemyTransform));
+
+
     componentManager.add_component<SpriteRender>(enemyEntity, std::move(enemySpriteComp));
 
     Direction enemyDirection = Direction::down;
@@ -53,80 +48,71 @@ void EnemySystem::create_enemy(sf::Texture& spriteSheet, const Transform& screen
     
 }
 
-
-void EnemySystem::handle_movements(float deltaTime)
+void EnemySystem::handle_movements(float deltaTime, Vector2& goal)
 {
-    static constexpr float DEFAULT_SPEED = 10.f;
+    static constexpr float DEFAULT_SPEED = 50.f; // Augmente un peu la vitesse pour tester
 
     auto& componentManager = ecs::ComponentManager::singleton();
 
-    // Parcourir toutes les entités gérées par EnemySystem
     for (ecs::Entity entity : entities())
     {
-        // Récupération des composants Motion, Transform et Direction
         auto& motion = componentManager.get_component<Motion>(entity);
         auto& transform = componentManager.get_component<Transform>(entity);
-        auto& direction = componentManager.get_component<Direction>(entity);
 
-        // 1 chance sur 4 de changer aléatoirement la direction de l’ennemi
-        if (std::rand() % 4 == 0)
+        // Calculer le vecteur direction vers le joueur
+        Vector2 direction = {
+            goal.x - transform.position.x,
+            goal.y - transform.position.y
+        };
+
+        // Normaliser la direction
+        float magnitude = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (magnitude > 0)
         {
-            direction = static_cast<Direction>(std::rand() % 5);
+            direction.x /= magnitude;
+            direction.y /= magnitude;
         }
 
-        // Mettre à jour le vecteur `motion.direction` en fonction de la direction de l’ennemi
-        switch (direction)
-        {
-        case Direction::up:
-            motion.direction = { 0.f, -DEFAULT_SPEED };
-            break;
-        case Direction::down:
-            motion.direction = { 0.f, DEFAULT_SPEED };
-            break;
-        case Direction::left:
-            motion.direction = { -DEFAULT_SPEED, 0.f };
-            break;
-        case Direction::right:
-            motion.direction = { DEFAULT_SPEED, 0.f };
-            break;
-        case Direction::none:
-            motion.direction = { 0.f, 0.f };
-            break;
-        }
-
-        // Mise à jour de la position selon la direction et l'accélération
-        transform.position.x += motion.acceleration.x * motion.direction.x * deltaTime;
-        transform.position.y += motion.acceleration.y * motion.direction.y * deltaTime;
+        // Appliquer la vitesse et le déplacement
+        transform.position.x += direction.x * DEFAULT_SPEED * deltaTime;
+        transform.position.y += direction.y * DEFAULT_SPEED * deltaTime;
     }
 }
+
 
 bool EnemySystem::isOutOfBounds(const Transform& base, const Transform& windowTransform) {
     return base.position.x < 0 || base.position.x > windowTransform.size.x ||
         base.position.y < 0 || base.position.y > windowTransform.size.y;
 }
 
-bool EnemySystem::intersects(const Transform& base, const Transform& other)
-{
-    return base.get_min_bound().x <= other.get_max_bound().x &&
-        base.get_max_bound().x >= other.get_min_bound().x &&
-        base.get_min_bound().y <= other.get_max_bound().y &&
-        base.get_max_bound().y >= other.get_min_bound().y;
+bool EnemySystem::intersects(const Transform& enemy, const Transform& player) {
+    return enemy.position.x < player.position.x + player.size.x &&
+        enemy.position.x + enemy.size.x > player.position.x &&
+        enemy.position.y < player.position.y + player.size.y &&
+        enemy.position.y + enemy.size.y > player.position.y;
 }
 
-void EnemySystem::checkCollisions(const Transform& screenTransform, const Transform& collider)
-{
-    for (ecs::Entity entity : entities())
-    {
-        auto& transform = ecs::ComponentManager::singleton().get_component<Transform>(entity);
 
-	    if (isOutOfBounds(transform, screenTransform) || intersects(transform, collider))
-	    {
-            ecs::SystemManager::singleton().remove_entity(entity);
-            ecs::EntityManager::singleton().destroy_entity(entity);
-	    }
+void EnemySystem::checkCollisions(const Transform& windowTransform, const Transform& playerTransform) {
+    auto& componentManager = ecs::ComponentManager::singleton();
+    std::vector<ecs::Entity> enemiesToRemove;
+
+    for (auto entity : entities()) {
+        auto& enemyTransform = componentManager.get_component<Transform>(entity);
+
+        if (intersects(enemyTransform, playerTransform)) {
+            enemiesToRemove.push_back(entity);
+        }
     }
 
+    for (auto entity : enemiesToRemove) {
+        ecs::SystemManager::singleton().remove_entity(entity);
+        ecs::EntityManager::singleton().destroy_entity(entity);
+    }
 }
+
+
+
 
 
 Transform EnemySystem::randomizePosition(const Transform& windowSize, Vector2& playerPosition)
