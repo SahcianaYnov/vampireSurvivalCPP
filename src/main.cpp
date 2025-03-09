@@ -166,7 +166,7 @@ int main() {
 
             enemyTransformData = enemySystem->randomizePosition(windowTransformData, convertedPlayerPosition);
 
-            enemySystem->create_enemy(enemyTexture, windowTransformData, enemyTransformData);
+            enemySystem->create_enemy(enemyTexture, enemyTransformData);
 
             elapsedTime = 0.f;
         }
