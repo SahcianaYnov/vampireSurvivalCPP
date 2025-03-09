@@ -15,4 +15,8 @@ public:
     void checkCollisions(const Transform& collider);
     Transform randomizePosition(const Transform& windowSize, Vector2& playerPosition);
     void render_enemy(sf::RenderWindow& window);
+
+private:
+    size_t enemyCount = 0;
+
 };

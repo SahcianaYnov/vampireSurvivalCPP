@@ -6,6 +6,8 @@
 
 void EnemySystem::create_enemy(sf::Texture& spriteSheet, Transform& enemyTransform)
 {
+    if (enemyCount >= 5) return;
+
     auto& componentManager = ecs::ComponentManager::singleton();
     auto& entityManager = ecs::EntityManager::singleton();
     auto& systemManager = ecs::SystemManager::singleton();
@@ -42,6 +44,7 @@ void EnemySystem::create_enemy(sf::Texture& spriteSheet, Transform& enemyTransfo
     // Chaque système ajoute l'entité seulement si sa signature correspond à leur signature
     // (que les composants de la signature du système sont compris dans ceux de la signature de l'ennemi)
     systemManager.update_entity_signature(enemyEntity, signature);
+    ++enemyCount;
     
 }
 
@@ -103,6 +106,7 @@ void EnemySystem::checkCollisions(const Transform& collider) {
     for (auto entity : enemiesToRemove) {
         ecs::SystemManager::singleton().remove_entity(entity);
         ecs::EntityManager::singleton().destroy_entity(entity);
+        if (enemyCount > 0) --enemyCount;
     }
 }
 
