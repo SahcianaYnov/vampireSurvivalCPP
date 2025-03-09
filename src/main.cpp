@@ -41,12 +41,6 @@ int main() {
     bulletSig.set(componentManager.get_component_type<sf::CircleShape>(), true);
     systemManager.register_system("BulletSystem", bulletSystem, bulletSig);
 
-    auto enemySystem = std::make_shared<EnemySystem>();
-    ecs::Signature enemySig;
-    enemySig.set(componentManager.get_component_type<Transform>(), true);
-    enemySig.set(componentManager.get_component_type<sf::Texture>(), true);
-    systemManager.register_system("BulletSystem", enemySystem, enemySig);
-
     // Etape 5 - Configurer la fenetre de jeu (antialiasing dimensions titre vsync)
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
@@ -104,21 +98,6 @@ int main() {
     float spawnInterval = 2.0f;
     float elapsedTime = 0.f;
 
-    // Etape 9 - Enemies
-    SpriteRender enemyAnimation;
-    sf::Texture enemyTexture;
-    sf::Sprite enemySprite;
-
-    enemyTexture.loadFromFile("assets/player.png");
-
-    // fait crash le code
-    //enemySystem->create_enemy(enemyTexture, windowTransformData);
-
-    enemySprite.setTexture(enemyTexture);
-
-    // On doit recup les entites du systeme mais je comprends pas comment vu que le cours ne le montre jamais
-    //enemyAnimation.sprite.setPosition();
-
     // EVENT LOOP
     while (windowRender.isOpen()) {
         float speed = 500.f;
@@ -129,51 +108,51 @@ int main() {
                 windowRender.close();
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
-            playerMotionData = { .directionNormalized = {.x = 0.f, .y = -1.f}, .speed = speed };
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            playerMotionData = { .directionNormalized = {.x = 0.f, .y = 1.f}, .speed = speed };
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
-            playerMotionData = { .directionNormalized = {.x = -1.f, .y = 0.f}, .speed = speed };
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            playerMotionData = { .directionNormalized = {.x = 1.f, .y = 0.f}, .speed = speed };
-        }
-        else {
-            playerMotionData = { .directionNormalized = {.x = 0.f, .y = 0.f}, .speed = 0.f };
-        }
-
-        // MAJ de la position du joueur
-        auto& playerTransform = componentManager.get_component<movcomp::Transform>(playerEntity);
         auto& playerMotion = componentManager.get_component<movcomp::Motion>(playerEntity);
 
-        Vector2 convertedPlayerPosition = { .x = playerTransformData.position.x, .y = playerTransformData.position.y };
-        Transform convertedPlayerTransformData = { .position = convertedPlayerPosition };
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+            playerMotion.directionNormalized = { 0.f, -1.f };
+            playerMotion.speed = speed;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            playerMotion.directionNormalized = { 0.f, 1.f };
+            playerMotion.speed = speed;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+            playerMotion.directionNormalized = { -1.f, 0.f };
+            playerMotion.speed = speed;
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+            playerMotion.directionNormalized = { 1.f, 0.f };
+            playerMotion.speed = speed;
+        }
+        else {
+            playerMotion.directionNormalized = { 0.f, 0.f };
+            playerMotion.speed = 0.f;
+        }
 
-        // Bug - playerMotionData n a pas ete update dans la signature pour X raisons
-        update_position(playerTransform, playerMotionData, 0.016f);
+        // Mettre à jour la position du joueur
+        auto& playerTransform = componentManager.get_component<movcomp::Transform>(playerEntity);
+        update_position(playerTransform, playerMotion, 0.016f);
 
-        // SPAWN - fonctionne pas pour X raisons
+
+
+        // SPAWN
         elapsedTime += spawnClock.restart().asSeconds();
         if (elapsedTime >= spawnInterval) {
             bulletsTransformData.position = spacomp::randomizePosition(windowTransformData, directionNormalized);
+
+            std::cout << bulletsTransformData.position.x << std::endl;
+
+            bulletsMotionData.direction = directionNormalized;
+            bulletsMotionData.acceleration = { 10.f, 1.f };
+
             bulletSystem->create_bullet(bulletsTransformData, bulletsMotionData);
-
-            //ennemiesTransformData = ennemySystem->randomizePosition(bulletsTransformData, playerTransformData.position);
-            //pas compris comment on fait vu que deja mis mon create enemy en haut
-
             elapsedTime = 0.f;
         }
 
         bulletSystem->update(0.016f);
 
-        //fait crash pour X raisons
-        //bulletSystem->checkCollisions(bulletsTransformData, windowTransformData, convertedPlayerTransformData, circleRender.getRadius());
-
-        //enemySystem->handle_movements(0.016f);
-        //enemySystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
 
         // RENDER
         windowRender.clear(sf::Color::Black);
@@ -184,13 +163,7 @@ int main() {
         windowRender.draw(playerSprite);
 
         // Bullet
-    	bulletSystem->render_bullet(windowRender);
-
-        // Enemy
-        enemySprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
-        // encore une fois, idk
-        //enemySprite.setPosition();
-        windowRender.draw(enemySprite);
+        bulletSystem->render_bullet(windowRender);
 
         windowRender.display();
     }

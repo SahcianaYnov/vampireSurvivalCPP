@@ -8,13 +8,14 @@ void BulletSystem::update(float deltaTime) {
     auto& componentManager = ecs::ComponentManager::singleton();
 
     for (auto entity : entities()) {
-    	auto& motion = componentManager.get_component<Motion>(entity);
-    	auto& transform = componentManager.get_component<Transform>(entity);
+        auto& motion = componentManager.get_component<Motion>(entity);
+        auto& transform = componentManager.get_component<Transform>(entity);
 
-    	transform.position.x += motion.direction.x * motion.acceleration.x * deltaTime;
-    	transform.position.y += motion.direction.y * motion.acceleration.y * deltaTime;
+        transform.position.x += motion.direction.x * motion.acceleration.x * deltaTime;
+        transform.position.y += motion.direction.y * motion.acceleration.y * deltaTime;
     }
 }
+
 
 bool BulletSystem::circleIntersectsRectangle(const Transform& circleTransform, float circleRadius, const Transform& rectangleTransform) {
     float closestX = std::fmax(rectangleTransform.position.x, std::fmin(circleTransform.position.x, rectangleTransform.position.x + rectangleTransform.size.x));
@@ -45,11 +46,16 @@ void BulletSystem::create_bullet(Transform& bulletTransform, Motion& bulletMotio
     ecs::Signature signature;
     ecs::Entity bulletEntity = entityManager.create_entity();
 
+    sf::CircleShape shape(10.f);
+    shape.setFillColor(sf::Color::Red);
+
+    componentManager.add_component<sf::CircleShape>(bulletEntity, std::move(shape));
     componentManager.add_component<Transform>(bulletEntity, std::move(bulletTransform));
     componentManager.add_component<Motion>(bulletEntity, std::move(bulletMotion));
 
     signature.set(componentManager.get_component_type<Transform>(), true);
     signature.set(componentManager.get_component_type<Motion>(), true);
+    signature.set(componentManager.get_component_type<sf::CircleShape>(), true);
 
     entityManager.set_entity_signature(bulletEntity, signature);
 	systemManager.update_entity_signature(bulletEntity, signature);
@@ -58,22 +64,31 @@ void BulletSystem::create_bullet(Transform& bulletTransform, Motion& bulletMotio
 void BulletSystem::render_bullet(sf::RenderWindow& window) {
     for (auto entity : entities()) {
         {
+            auto& transform = ecs::ComponentManager::singleton().get_component<Transform>(entity);
             auto& circle = ecs::ComponentManager::singleton().get_component<sf::CircleShape>(entity);
-            circle.setFillColor(sf::Color(100, 250, 50));
+
+            circle.setPosition(transform.position.x, transform.position.y);
             window.draw(circle);
+
         }
     }
 }
 
-void BulletSystem::checkCollisions(Transform& bulletTransform, Transform& windowTransform, Transform& playerTransform, float circleRadius)
-{
+void BulletSystem::checkCollisions(const Transform& windowTransform, const Transform& playerTransform, float circleRadius) {
+    auto& componentManager = ecs::ComponentManager::singleton();
+    std::vector<ecs::Entity> bulletsToRemove;
+
     for (auto entity : entities()) {
-        {
+        auto& bulletTransform = componentManager.get_component<Transform>(entity);
 
-            if (isOutOfBounds(bulletTransform, windowTransform) || circleIntersectsRectangle(bulletTransform, circleRadius, playerTransform))
-            {
-                deleteBullet(entity);
-            }
+        if (isOutOfBounds(bulletTransform, windowTransform) || circleIntersectsRectangle(bulletTransform, circleRadius, playerTransform)) {
+            bulletsToRemove.push_back(entity);
         }
     }
+
+    // Suppression après la boucle pour éviter des suppressions pendant l'itération
+    for (auto entity : bulletsToRemove) {
+        deleteBullet(entity);
+    }
 }
+

@@ -19,5 +19,5 @@ public:
 	void create_bullet(Transform &bulletTransform, Motion &bulletMotion);
 
 	void render_bullet(sf::RenderWindow &window);
-	void checkCollisions(Transform& bulletTransform, Transform& windowTransform, Transform& playerTransform, float circleRadius);
+	void checkCollisions(const Transform& windowTransform, const Transform& playerTransform, float circleRadius);
 };
