@@ -5,9 +5,15 @@
 
 #include <SFML/Graphics/Texture.hpp>
 
+#include "movementComponent.hpp"
+
 class EnemySystem : public ecs::System
 {
 public:
     void create_enemy(sf::Texture& spriteSheet, const Transform& screenTransform);
     void handle_movements(float deltaTime);
+    bool isOutOfBounds(const Transform& base, const Transform& windowTransform);
+    bool intersects(const Transform& base, const Transform& other);
+    void checkCollisions(const Transform& screenTransform, const Transform& collider);
+    Transform randomizePosition(const Transform& windowSize, movcomp::Vec2& playerPosition);
 };

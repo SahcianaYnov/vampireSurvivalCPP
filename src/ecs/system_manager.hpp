@@ -14,6 +14,8 @@ namespace ecs
 
 	class __declspec(dllexport) System
 	{
+	public:
+		virtual ~System() = default;
 	protected:
 		std::set<Entity>& entities() { return mEntities; }
 	private:
@@ -24,6 +26,13 @@ namespace ecs
 	class __declspec(dllexport) SystemManager
 	{
 	public:
+
+		static SystemManager& singleton()
+		{
+			static SystemManager s_singleton;
+			return s_singleton;
+		}
+
 		void register_system(std::string_view typeName, std::shared_ptr<System> system, Signature signature);
 
 		template<typename TSystem>
@@ -41,6 +50,6 @@ namespace ecs
 	template<typename TSystem>
 	[[nodiscard]] std::shared_ptr<TSystem> SystemManager::get_system(const std::string& typeName)
 	{
-		return mSystems[typeName];
+		return std::dynamic_pointer_cast<TSystem>(mSystems[typeName]);
 	}
 }

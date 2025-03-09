@@ -1,10 +1,8 @@
 #pragma once
-#include <systems/movementComponent.hpp>
-
-using namespace movcomp;
+#include <components/base.hpp>
 
 namespace spacomp {
 
-	Vec2 randomizePosition(const Transform& windowSize, Vec2& directionNormalized);
+	Vector2 randomizePosition(const Transform& windowSize, Vector2& directionNormalized);
 
 }

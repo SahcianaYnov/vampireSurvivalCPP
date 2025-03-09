@@ -1,7 +1,5 @@
 #pragma once
-#include <systems/movementComponent.hpp>
-
-using namespace movcomp;
+#include <base.hpp>
 
 namespace playerent {
 	struct Player

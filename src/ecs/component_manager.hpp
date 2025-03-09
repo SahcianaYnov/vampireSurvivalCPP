@@ -28,13 +28,18 @@ namespace ecs
 		template<typename TComponent>
 		TComponent& get_component(Entity entity);
 
+		static ComponentManager& singleton()
+		{
+			static ComponentManager s_singleton;
+			return s_singleton;
+		}
+
 		void remove_entity(Entity entity, const Signature& signature);
 
 		template<typename TComponent>
 		Component get_component_type();
 	private:
 		std::array<std::unique_ptr<details::IComponentArray>, MAX_COMPONENTS> mComponentArrays{};
-
 		static inline Component sComponentTypeIndex = 0;
 
 		template<typename TComponent>
@@ -50,7 +55,6 @@ namespace ecs
 		Component typeId = get_typeindex<TComponent>();
 		assert(typeId < MAX_COMPONENTS && "Too many component types registered!");
 		assert(mComponentArrays[typeId] == nullptr && "Registering component type more than once.");
-
 		mComponentArrays[typeId] = std::make_unique<details::ComponentArray<TComponent>>();
 	}
 

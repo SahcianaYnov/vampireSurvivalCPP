@@ -1,5 +1,6 @@
 #include "systems/enemy_system.hpp"
 
+#include "movementComponent.hpp"
 #include "components/base.hpp"
 #include "components/render.hpp"
 
@@ -91,4 +92,77 @@ void EnemySystem::handle_movements(float deltaTime)
         transform.position.x += motion.acceleration.x * motion.direction.x * deltaTime;
         transform.position.y += motion.acceleration.y * motion.direction.y * deltaTime;
     }
+}
+
+bool EnemySystem::isOutOfBounds(const Transform& base, const Transform& windowTransform) {
+    return base.position.x < 0 || base.position.x > windowTransform.size.x ||
+        base.position.y < 0 || base.position.y > windowTransform.size.y;
+}
+
+bool EnemySystem::intersects(const Transform& base, const Transform& other)
+{
+    return base.get_min_bound().x <= other.get_max_bound().x &&
+        base.get_max_bound().x >= other.get_min_bound().x &&
+        base.get_min_bound().y <= other.get_max_bound().y &&
+        base.get_max_bound().y >= other.get_min_bound().y;
+}
+
+void EnemySystem::checkCollisions(const Transform& screenTransform, const Transform& collider)
+{
+    for (ecs::Entity entity : entities())
+    {
+        auto& transform = ecs::components().get_component<Transform>(entity);
+
+	    if (isOutOfBounds(transform, screenTransform) || intersects(transform, collider))
+	    {
+            ecs::SystemManager::singleton().remove_entity(entity);
+            ecs::EntityManager::singleton().destroy_entity(entity);
+	    }
+    }
+
+}
+
+
+Transform EnemySystem::randomizePosition(const Transform& windowSize, movcomp::Vec2& playerPosition)
+{
+    static constexpr float DEFAULT_SPEED = 10.f;
+
+    for (ecs::Entity entity : entities())
+    {
+        auto& motion = ecs::components().get_component<Motion>(entity);
+        auto& transform = ecs::components().get_component<Transform>(entity);
+        auto& direction = ecs::components().get_component<Direction>(entity);
+
+    	Vector2 maxBound = windowSize.get_max_bound();
+		int zone = rand() % 4;
+
+        Vector2 convertedPlayerPosition = { .x = playerPosition.x, .y = playerPosition.y };
+
+        Transform newTransform;
+
+        switch (zone)
+        {
+        case 0: // Haut
+            transform.position = { static_cast<float>(rand() % static_cast<int>(maxBound.x)), 0.f };
+            break;
+
+        case 1: // Bas
+            transform.position = { static_cast<float>(rand() % static_cast<int>(maxBound.x)), maxBound.y };
+            break;
+
+        case 2: // Gauche
+            transform.position = { 0.f, static_cast<float>(rand() % static_cast<int>(maxBound.y)) };
+            break;
+
+        case 3: // Droite
+            transform.position = { maxBound.x, static_cast<float>(rand() % static_cast<int>(maxBound.y)) };
+            break;
+        }
+
+        motion.direction = { convertedPlayerPosition.x, convertedPlayerPosition.y };
+
+        return newTransform;
+    }
+
+
 }

@@ -17,10 +17,13 @@ namespace ecs
 	{
 	public:
 		EntityManager();
-
+		static EntityManager& singleton()
+		{
+			static EntityManager s_singleton;
+			return s_singleton;
+		}
 		[[nodiscard]] Entity create_entity();
 		void destroy_entity(Entity entity);
-
 		void set_entity_signature(Entity entity, Signature signature);
 		[[nodiscard]] Signature get_entity_signature(Entity entity);
 	private:

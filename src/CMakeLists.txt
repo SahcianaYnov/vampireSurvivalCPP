@@ -10,7 +10,8 @@ add_library(vampireSurvival STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/systems/movementComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/systems/spawnComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/entities/playerEntity.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/entities/enemyEntity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/systems/bullet_system.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/systems/enemy_system.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/components/animationComponent.cpp)
 
 target_include_directories(vampireSurvival PUBLIC
@@ -19,7 +20,7 @@ target_include_directories(vampireSurvival PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/components/)
 
 # Liez vampireSurvival à ecs
-target_link_libraries(vampireSurvival PUBLIC ecs)
+target_link_libraries(vampireSurvival PUBLIC ecs sfml::sfml)
 
 # Ajoutez l'exécutable main_test_exe
 add_executable(main_test_exe ${CMAKE_CURRENT_SOURCE_DIR}/main_test.cpp)
@@ -39,6 +40,7 @@ target_link_libraries(main_exe
 add_executable(app
     ${CMAKE_CURRENT_SOURCE_DIR}/systems/enemy_system.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/systems/render_system.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/systems/bullet_system.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 target_include_directories(app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
