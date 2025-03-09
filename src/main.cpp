@@ -175,7 +175,7 @@ int main() {
         enemySystem->handle_movements(0.016f, convertedPlayerPosition);
 
         bulletSystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
-        enemySystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
+        enemySystem->checkCollisions(convertedPlayerTransformData);
 
         // RENDER
         windowRender.clear(sf::Color::Black);

@@ -1,13 +1,10 @@
 #include "systems/enemy_system.hpp"
-
-#include "movementComponent.hpp"
 #include "components/base.hpp"
 #include "components/render.hpp"
-
 #include "ecs/entity_manager.hpp"
 #include "ecs/component_manager.hpp"
 
-void EnemySystem::create_enemy(sf::Texture& spriteSheet, const Transform& screenTransform, Transform& enemyTransform)
+void EnemySystem::create_enemy(sf::Texture& spriteSheet, Transform& enemyTransform)
 {
     auto& componentManager = ecs::ComponentManager::singleton();
     auto& entityManager = ecs::EntityManager::singleton();
@@ -79,7 +76,6 @@ void EnemySystem::handle_movements(float deltaTime, Vector2& goal)
     }
 }
 
-
 bool EnemySystem::isOutOfBounds(const Transform& base, const Transform& windowTransform) {
     return base.position.x < 0 || base.position.x > windowTransform.size.x ||
         base.position.y < 0 || base.position.y > windowTransform.size.y;
@@ -92,15 +88,14 @@ bool EnemySystem::intersects(const Transform& enemy, const Transform& player) {
         enemy.position.y + enemy.size.y > player.position.y;
 }
 
-
-void EnemySystem::checkCollisions(const Transform& windowTransform, const Transform& playerTransform) {
+void EnemySystem::checkCollisions(const Transform& collider) {
     auto& componentManager = ecs::ComponentManager::singleton();
     std::vector<ecs::Entity> enemiesToRemove;
 
     for (auto entity : entities()) {
         auto& enemyTransform = componentManager.get_component<Transform>(entity);
 
-        if (intersects(enemyTransform, playerTransform)) {
+        if (intersects(enemyTransform, collider)) {
             enemiesToRemove.push_back(entity);
         }
     }
@@ -110,10 +105,6 @@ void EnemySystem::checkCollisions(const Transform& windowTransform, const Transf
         ecs::EntityManager::singleton().destroy_entity(entity);
     }
 }
-
-
-
-
 
 Transform EnemySystem::randomizePosition(const Transform& windowSize, Vector2& playerPosition)
 {
