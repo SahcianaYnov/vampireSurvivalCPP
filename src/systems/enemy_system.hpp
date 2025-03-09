@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Graphics/RenderWindow.hpp>
+
 #include "components/base.hpp"
 #include "ecs/system_manager.hpp"
 
@@ -15,5 +17,6 @@ public:
     bool isOutOfBounds(const Transform& base, const Transform& windowTransform);
     bool intersects(const Transform& base, const Transform& other);
     void checkCollisions(const Transform& screenTransform, const Transform& collider);
-    Transform randomizePosition(const Transform& windowSize, movcomp::Vec2& playerPosition);
+    Transform randomizePosition(const Transform& windowSize, Vector2& playerPosition);
+    void render_enemy(sf::RenderWindow& window);
 };

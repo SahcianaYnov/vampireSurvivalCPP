@@ -11,7 +11,7 @@ namespace ecs { class EntityManager; }
 
 namespace ecs
 {
-	[[nodiscard]] __declspec(dllexport) EntityManager& entities();
+	//[[nodiscard]] __declspec(dllexport) EntityManager& entities();
 
 	class __declspec(dllexport) EntityManager
 	{

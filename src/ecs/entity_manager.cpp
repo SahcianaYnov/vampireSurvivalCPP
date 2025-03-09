@@ -46,9 +46,9 @@ namespace ecs
 		return mSignatures[entity];
 	}
 
-	[[nodiscard]] EntityManager& entities()
+	/*[[nodiscard]] EntityManager& entities()
 	{
 		static EntityManager s_singleton;
 		return s_singleton;
-	}
+	}*/
 }

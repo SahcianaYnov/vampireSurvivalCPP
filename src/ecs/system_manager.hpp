@@ -10,7 +10,7 @@ namespace ecs { class SystemManager; }
 
 namespace ecs
 {
-	[[nodiscard]] __declspec(dllexport) SystemManager& systems();
+	//[[nodiscard]] __declspec(dllexport) SystemManager& systems();
 
 	class __declspec(dllexport) System
 	{

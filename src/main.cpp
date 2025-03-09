@@ -24,6 +24,8 @@ int main() {
     componentManager.register_component<movcomp::Transform>();
     componentManager.register_component<movcomp::Motion>();
     componentManager.register_component<sf::CircleShape>();
+    componentManager.register_component<Direction>();
+    componentManager.register_component<SpriteRender>();
 
     // Etape 3 - Creation des entites avec leurs signatures
     ecs::Signature signatureWindow;
@@ -40,6 +42,14 @@ int main() {
     bulletSig.set(componentManager.get_component_type<Motion>(), true);
     bulletSig.set(componentManager.get_component_type<sf::CircleShape>(), true);
     systemManager.register_system("BulletSystem", bulletSystem, bulletSig);
+
+    auto enemySystem = std::make_shared<EnemySystem>();
+    ecs::Signature enemySig;
+    enemySig.set(componentManager.get_component_type<Transform>(), true);
+    enemySig.set(componentManager.get_component_type<Motion>(), true);
+    enemySig.set(componentManager.get_component_type<Direction>(), true);
+    enemySig.set(componentManager.get_component_type<SpriteRender>(), true);
+    systemManager.register_system("EnemySystem", enemySystem, enemySig);
 
     // Etape 5 - Configurer la fenetre de jeu (antialiasing dimensions titre vsync)
     sf::ContextSettings settings;
@@ -98,6 +108,18 @@ int main() {
     float spawnInterval = 2.0f;
     float elapsedTime = 0.f;
 
+    // Etape 9 - Enemies
+    sf::Texture enemyTexture;
+    Transform enemyTransformData;
+    Motion enemyMotionData{};
+    enemyTexture.loadFromFile("assets/player.png");
+
+    sf::Sprite enemySprite;
+    enemySprite.setTexture(enemyTexture);
+    enemySprite.setPosition(enemyTransformData.position.x, enemyTransformData.position.y);
+
+
+
     // EVENT LOOP
     while (windowRender.isOpen()) {
         float speed = 500.f;
@@ -135,7 +157,8 @@ int main() {
         auto& playerTransform = componentManager.get_component<movcomp::Transform>(playerEntity);
         update_position(playerTransform, playerMotion, 0.016f);
 
-
+        Vector2 convertedPlayerPosition = { .x = playerTransform.position.x, .y = playerTransform.position.y };
+        Transform convertedPlayerTransformData = { .position = convertedPlayerPosition };
 
         // SPAWN
         elapsedTime += spawnClock.restart().asSeconds();
@@ -148,13 +171,24 @@ int main() {
             bulletsMotionData.acceleration = { 100.f, 100.f };
 
             bulletSystem->create_bullet(bulletsTransformData, bulletsMotionData);
+
+            enemySystem->create_enemy(enemyTexture, windowTransformData);
+
+            enemyTransformData = enemySystem->randomizePosition(windowTransformData, convertedPlayerPosition);
+
+            std::cout << "Position sur x " << enemyTransformData.position.x << " Position sur y " << enemyTransformData.position.y << std::endl;
+
+            enemyMotionData.direction = convertedPlayerPosition;
+            enemyMotionData.acceleration = { 100.f, 100.f };
+
+
             elapsedTime = 0.f;
         }
 
         bulletSystem->update(0.016f);
 
-        Vector2 convertedPlayerPosition = { .x = playerTransform.position.x, .y = playerTransform.position.y };
-        Transform convertedPlayerTransformData = { .position = convertedPlayerPosition };
+        enemySystem->handle_movements(0.016f);
+        
 
         bulletSystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
 
@@ -168,6 +202,9 @@ int main() {
 
         // Bullet
         bulletSystem->render_bullet(windowRender);
+
+        // Enemy
+        enemySystem->render_enemy(windowRender);
 
         windowRender.display();
     }

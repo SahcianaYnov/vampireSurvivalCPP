@@ -5,10 +5,10 @@ set(CMAKE_CXX_STANDARD 23)
 execute_process(
     COMMAND conan install ${CMAKE_SOURCE_DIR}/conanfile.txt
     --build=missing
+    -s build_type=Debug
     -of ${CMAKE_SOURCE_DIR}/build
 )
 
-find_package(boost REQUIRED)
 find_package(GTest REQUIRED) 
 find_package(SFML 2.6.2 REQUIRED COMPONENTS system window graphics)
 
@@ -19,7 +19,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/assets
 
 add_custom_target(copy_assets_to_runtime ALL
  COMMAND ${CMAKE_COMMAND} --install . --prefix
-${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release
+${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug
  COMMENT "Installing assets to runtime directory"
 )
 

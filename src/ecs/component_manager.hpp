@@ -11,7 +11,7 @@ namespace ecs { class ComponentManager; }
 
 namespace ecs
 {
-	[[nodiscard]] __declspec(dllexport) ComponentManager& components();
+	//[[nodiscard]] __declspec(dllexport) ComponentManager& components();
 
 	class __declspec(dllexport) ComponentManager
 	{
@@ -108,9 +108,9 @@ namespace ecs
 		return static_cast<details::ComponentArray<TComponent>*>(mComponentArrays[typeId].get());
 	}
 
-	[[nodiscard]] inline ComponentManager& components()
+	/*[[nodiscard]] inline ComponentManager& components()
 	{
 		static ComponentManager s_singleton;
 		return s_singleton;
-	}
+	}*/
 }

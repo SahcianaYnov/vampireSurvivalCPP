@@ -35,9 +35,9 @@ namespace ecs
 		}
 	}
 
-	[[nodiscard]] SystemManager& systems()
+	/*[[nodiscard]] SystemManager& systems()
 	{
 		static SystemManager s_singleton;
 		return s_singleton;
-	}
+	}*/
 }

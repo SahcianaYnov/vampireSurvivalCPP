@@ -12,7 +12,7 @@
       "binaryDir": "${sourceDir}/build",
       "installDir": "${sourceDir}/install",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin/exe",
         "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/bin/exe",
         "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/bin/lib",
@@ -31,7 +31,7 @@
     {
       "name": "Build-Release",
       "configurePreset": "Build-Release",
-      "configuration": "Release",
+      "configuration": "Debug",
       "verbose": true,
       "jobs": 4
     }
