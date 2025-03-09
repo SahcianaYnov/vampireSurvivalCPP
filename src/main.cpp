@@ -142,10 +142,10 @@ int main() {
         if (elapsedTime >= spawnInterval) {
             bulletsTransformData.position = spacomp::randomizePosition(windowTransformData, directionNormalized);
 
-            std::cout << bulletsTransformData.position.x << std::endl;
+            //std::cout << bulletsTransformData.position.x << std::endl;
 
             bulletsMotionData.direction = directionNormalized;
-            bulletsMotionData.acceleration = { 10.f, 1.f };
+            bulletsMotionData.acceleration = { 100.f, 100.f };
 
             bulletSystem->create_bullet(bulletsTransformData, bulletsMotionData);
             elapsedTime = 0.f;
@@ -153,6 +153,10 @@ int main() {
 
         bulletSystem->update(0.016f);
 
+        Vector2 convertedPlayerPosition = { .x = playerTransform.position.x, .y = playerTransform.position.y };
+        Transform convertedPlayerTransformData = { .position = convertedPlayerPosition };
+
+        bulletSystem->checkCollisions(windowTransformData, convertedPlayerTransformData);
 
         // RENDER
         windowRender.clear(sf::Color::Black);

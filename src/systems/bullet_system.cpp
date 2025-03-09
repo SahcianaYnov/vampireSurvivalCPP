@@ -74,19 +74,19 @@ void BulletSystem::render_bullet(sf::RenderWindow& window) {
     }
 }
 
-void BulletSystem::checkCollisions(const Transform& windowTransform, const Transform& playerTransform, float circleRadius) {
+void BulletSystem::checkCollisions(const Transform& windowTransform, const Transform& playerTransform) {
     auto& componentManager = ecs::ComponentManager::singleton();
     std::vector<ecs::Entity> bulletsToRemove;
 
     for (auto entity : entities()) {
         auto& bulletTransform = componentManager.get_component<Transform>(entity);
+        auto& circle = ecs::ComponentManager::singleton().get_component<sf::CircleShape>(entity);
 
-        if (isOutOfBounds(bulletTransform, windowTransform) || circleIntersectsRectangle(bulletTransform, circleRadius, playerTransform)) {
+        if (isOutOfBounds(bulletTransform, windowTransform) || circleIntersectsRectangle(bulletTransform, circle.getRadius(), playerTransform)) {
             bulletsToRemove.push_back(entity);
         }
     }
 
-    // Suppression après la boucle pour éviter des suppressions pendant l'itération
     for (auto entity : bulletsToRemove) {
         deleteBullet(entity);
     }
